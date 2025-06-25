@@ -6,6 +6,7 @@ use App\Models\Tagihan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Models\Pelanggan; // Pastikan model Pelanggan diimport
 
 class TagihanController extends Controller
 {
@@ -71,6 +72,9 @@ class TagihanController extends Controller
             ], 500);
         }
     }
+
+
+
 
     public function show($id)
     {
@@ -175,7 +179,7 @@ class TagihanController extends Controller
         }
     }
 
-    public function buatTagihanMassal(Request $request)
+    public function buatTagihanMassal1(Request $request)
     {
         $request->validate([
             'id_bulan' => 'required|size:2|exists:bulans,id_bulan',
@@ -237,6 +241,72 @@ class TagihanController extends Controller
             'data' => $tagihanBaru
         ]);
     }
+
+    public function buatTagihanMassal(Request $request)
+    {
+        $request->validate([
+            'id_bulan' => 'required|size:2|exists:bulans,id_bulan',
+            'tahun' => 'required|digits:4|integer|min:2000',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $id_bulan = $request->id_bulan;
+        $tahun = $request->tahun;
+        $user_id = $request->user_id;
+
+        // Cek apakah tagihan untuk bulan dan tahun tersebut sudah ada
+        $sudahAda = \App\Models\Tagihan::where('id_bulan', $id_bulan)
+            ->where('tahun', $tahun)
+            ->exists();
+
+        if ($sudahAda) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tagihan untuk bulan dan tahun tersebut sudah dibuat sebelumnya.'
+            ], 409);
+        }
+
+        // Ambil semua pelanggan dengan paket yang aktif (remark1 = '1')
+        $pelangganList = \App\Models\Pelanggan::with('paket')->where('remark1', '1')->get();
+        $tagihanBaru = [];
+
+        // Generate invoice number (no_tagihan)
+        $lastNo = \App\Models\Tagihan::where('no_tagihan', 'like', 'TAG' . date('Ym') . '%')
+            ->orderBy('no_tagihan', 'desc')
+            ->first();
+
+        $counter = $lastNo ? (int)substr($lastNo->no_tagihan, -4) : 0;
+
+        foreach ($pelangganList as $pelanggan) {
+            if (!$pelanggan->paket) continue; // Skip jika tidak punya paket
+
+            $counter++;
+            $no_tagihan = 'TAG' . date('Ym') . str_pad($counter, 4, '0', STR_PAD_LEFT);
+
+            $tagihanBaru[] = [
+                'no_tagihan' => $no_tagihan,
+                'id_pelanggan' => $pelanggan->id_pelanggan,
+                'id_bulan' => $id_bulan,
+                'tahun' => $tahun,
+                'jumlah_tagihan' => $pelanggan->paket->harga,
+                'status' => 'belum', // 0 = belum bayar
+                'tgl_bayar' => null,
+                'user_id' => $user_id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        // Insert new tagihans
+        \App\Models\Tagihan::insert($tagihanBaru);
+
+        return response()->json([
+            'success' => true,
+            'message' => count($tagihanBaru) . ' tagihan berhasil dibuat.',
+            'data' => $tagihanBaru
+        ]);
+    }
+
 
     public function getByBulanTahun(Request $request)
     {
