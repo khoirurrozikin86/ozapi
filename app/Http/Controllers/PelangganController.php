@@ -25,8 +25,8 @@ class PelangganController extends Controller
             'nama' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string',
-            'email' => 'required|email|unique:pelanggans',
-            'password' => 'required|min:6',
+            'email' => 'nullable',
+            'password' => 'required|min:3',
         ]);
 
         if ($validator->fails()) {
