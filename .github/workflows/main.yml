@@ -1,0 +1,40 @@
+name: Deploy to Server Staging
+
+on:
+    push:
+        branches:
+            - dev # Untuk branch staging
+
+jobs:
+    deploy-staging:
+        # if: github.ref == 'refs/heads/dev'
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Deploy to Staging via SSH
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  port: ${{ secrets.SSH_PORT }}
+                  script: |
+                      cd /var/www/html/ozpay
+                      git fetch origin2    
+                      
+                      # Cek apakah branch lokal 'dev' sudah ada
+                      if git show-ref --verify --quiet refs/heads/dev; then
+                          git switch dev
+                          git reset --hard origin2/dev
+                      else
+                          git switch -c dev --track origin2/dev
+                      fi
+
+                      composer install --no-interaction --prefer-dist --optimize-autoloader
+
+                      php artisan migrate --force
+                      php artisan config:cache
+                      php artisan route:cache
+                      php artisan view:cache
+
+                      # npm run build
