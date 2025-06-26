@@ -23,12 +23,12 @@ jobs:
                       git fetch origin2    
                       
                       # Cek apakah branch lokal 'dev' sudah ada
-                      if git show-ref --verify --quiet refs/heads/dev; then
-                          git switch dev
-                          git reset --hard origin2/dev
-                      else
-                          git switch -c dev --track origin2/dev
-                      fi
+                      # if git show-ref --verify --quiet refs/heads/dev; then
+                      #     git switch dev
+                      #     git reset --hard origin2/dev
+                      # else
+                      #     git switch -c dev --track origin2/dev
+                      # fi
 
                       composer install --no-interaction --prefer-dist --optimize-autoloader
 
