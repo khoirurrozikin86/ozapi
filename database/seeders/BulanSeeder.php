@@ -10,7 +10,7 @@ class BulanSeeder extends Seeder
     public function run()
     {
 
-        // Nonaktifkan foreign key check sementara
+        // Nonaktifkan foreign key check sementaraa
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         // Gunakan delete() + reset auto increment daripada truncate()
