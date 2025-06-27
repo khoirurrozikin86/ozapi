@@ -2,20 +2,24 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Bulan;
 
 class BulanSeeder extends Seeder
-
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        $data = [
+
+        // Nonaktifkan foreign key check sementara
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        // Gunakan delete() + reset auto increment daripada truncate()
+        DB::table('bulans')->delete();
+        DB::statement('ALTER TABLE bulans AUTO_INCREMENT = 1');
+
+        $now = now(); // Waktu saat ini
+
+        $bulans = [
             ['id_bulan' => '01', 'bulan' => 'Januari'],
             ['id_bulan' => '02', 'bulan' => 'Februari'],
             ['id_bulan' => '03', 'bulan' => 'Maret'],
@@ -29,6 +33,14 @@ class BulanSeeder extends Seeder
             ['id_bulan' => '11', 'bulan' => 'November'],
             ['id_bulan' => '12', 'bulan' => 'Desember'],
         ];
+
+        // Tambahkan timestamp ke setiap data
+        $data = array_map(function ($item) use ($now) {
+            return array_merge($item, [
+                'created_at' => $now,
+                'updated_at' => $now
+            ]);
+        }, $bulans);
 
         DB::table('bulans')->insert($data);
     }

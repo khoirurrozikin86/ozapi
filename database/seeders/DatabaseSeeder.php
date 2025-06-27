@@ -14,38 +14,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
-        // $this->call([
-        //     ProductSeeder::class,
-        // ]);
-
-    //       User::create([
-    //     'name' => 'Admin',
-    //     'email' => 'admin@example.com',
-    //     'password' => bcrypt('password'),
-    //     'role' => 'admin',
-    // ]);
-
-    // User::create([
-    //     'name' => 'User',
-    //     'email' => 'user@example.com',
-    //     'password' => bcrypt('password'),
-    //     'role' => 'user',
-    // ]);
 
 
-       $this->call([
-        PaketSeeder::class,
-    ]);
-
-
-
-
+        $this->call([
+            BulanSeeder::class,
+            PaketSeeder::class,
+            ServerSeeder::class,
+            UserSeeder::class,
+            PelangganSeeder::class,
+        ]);
     }
 }
