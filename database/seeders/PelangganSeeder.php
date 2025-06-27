@@ -10,7 +10,7 @@ class PelangganSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Kosongkan tabel pelanggans
+        // 1. Kosongkan tabel pelangganss
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('pelanggans')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
