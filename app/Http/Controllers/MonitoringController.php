@@ -90,9 +90,9 @@ class MonitoringController extends Controller
             $mikrotik->disconnect();
 
             // Send Telegram notification if there is a router loss
-            if (count($routerLoss) > 0) {
-                $this->sendTelegramMessage($routerLoss);
-            }
+            // if (count($routerLoss) > 0) {
+            //     $this->sendTelegramMessage($routerLoss);
+            // }
 
             // Return the response with router status
             return response()->json([
@@ -107,10 +107,10 @@ class MonitoringController extends Controller
 
 
     // Function to send message to Telegram if routers are down
-    private function sendTelegramMessage($routerLoss)
-    {
-        $url = "https://api.telegram.org/bot1614882691:AAHWOJN0w_tvmwU1QokpvMWCNv8HLrXakRM/sendMessage?chat_id=-517279951&";
-        $text = "text=" . date('d-m-Y') . "\n\n" . implode("\n", $routerLoss);
-        file_get_contents($url . $text);
-    }
+    // private function sendTelegramMessage($routerLoss)
+    // {
+    //     $url = "https://api.telegram.org/bot1614882691:AAHWOJN0w_tvmwU1QokpvMWCNv8HLrXakRM/sendMessage?chat_id=-517279951&";
+    //     $text = "text=" . date('d-m-Y') . "\n\n" . implode("\n", $routerLoss);
+    //     file_get_contents($url . $text);
+    // }
 }

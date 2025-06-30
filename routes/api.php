@@ -25,8 +25,8 @@ Route::post('/login', [AuthController::class, 'login']);
 // Route::get('/monitoring/{id}', [MonitoringController::class, 'show']);
 
 
-Route::get('/monitoring/testrouteros', [MonitoringController::class, 'testRouteros']);
-
+// Route::get('/monitoring/testrouteros', [MonitoringController::class, 'testRouteros']);
+Route::get('/monitoring/{id}', [MonitoringController::class, 'index']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('pakets', PaketController::class);
 
 
-    Route::get('/monitoring/{id}', [MonitoringController::class, 'index']);
+
 
 
 

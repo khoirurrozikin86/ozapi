@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('id_pelanggan')->unique();
             $table->string('nama');
-            $table->text('alamat');
-            $table->string('no_hp');
-            $table->string('email')->unique();
+            $table->text('alamat')->nullable();
+            $table->string('no_hp')->nullable();
+            $table->string('email')->nullable();
             $table->string('password');
             $table->unsignedBigInteger('id_paket')->nullable();
             $table->string('ip_router')->nullable();
