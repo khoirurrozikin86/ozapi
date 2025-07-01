@@ -37,8 +37,28 @@ class UserSeeder extends Seeder
                 'updated_at' => $now
             ],
             [
-                'name' => 'User',
-                'email' => 'user@ozet.com',
+                'name' => 'bagas',
+                'email' => 'bagas@ozet.com',
+                'role' => 'user',
+                'email_verified_at' => null,
+                'password' => Hash::make('password123'), // Encrypted password
+                'remember_token' => null,
+                'created_at' => $now,
+                'updated_at' => $now
+            ],
+            [
+                'name' => 'faris',
+                'email' => 'faris@ozet.com',
+                'role' => 'user',
+                'email_verified_at' => null,
+                'password' => Hash::make('password123'), // Encrypted password
+                'remember_token' => null,
+                'created_at' => $now,
+                'updated_at' => $now
+            ],
+            [
+                'name' => 'dian',
+                'email' => 'dian@ozet.com',
                 'role' => 'user',
                 'email_verified_at' => null,
                 'password' => Hash::make('password123'), // Encrypted password
@@ -46,6 +66,7 @@ class UserSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now
             ]
+
         ];
 
         // Using insertOrIgnore to prevent duplicate errors
