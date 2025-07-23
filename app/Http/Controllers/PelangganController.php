@@ -6,6 +6,7 @@ use App\Models\Pelanggan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class PelangganController extends Controller
 {
@@ -19,6 +20,71 @@ class PelangganController extends Controller
     }
 
     public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'id_server' => 'required|exists:servers,id',
+        'nama' => 'required|string|max:255',
+        'alamat' => 'nullable|string',
+        'no_hp' => 'nullable|string',
+        'email' => 'nullable|email',
+        'password' => 'nullable|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validasi gagal.',
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    try {
+        // Cari server berdasarkan id_server
+        $server = Server::find($request->id_server);
+        if (!$server) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Server tidak ditemukan.'
+            ], 404);
+        }
+
+        // Ambil dua huruf awal lokasi
+        $serverPrefix = strtoupper(substr($server->lokasi, 0, 2));
+
+        // Format waktu: bulan + hari + jam + menit + detik (misal: 0723123045)
+        $timestamp = date('mdHis');
+
+        // Tambah 3 karakter acak
+        $randomStr = strtoupper(Str::random(3));
+
+        // Gabungkan jadi id_pelanggan: misalnya JA0723123045X8K
+        $id_pelanggan = $serverPrefix . $timestamp . $randomStr;
+
+        // Ambil semua data request
+        $data = $request->all();
+
+        // Tambahkan remark1 dan id_pelanggan
+        $data['remark1'] = 1;
+        $data['id_pelanggan'] = $id_pelanggan;
+
+        // Simpan data pelanggan
+        $pelanggan = Pelanggan::create($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pelanggan berhasil ditambahkan.',
+            'data' => $pelanggan
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal menambahkan pelanggan.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+    public function store1(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id_server' => 'required|exists:servers,id', // Make sure id_server exists in the servers table
