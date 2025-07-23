@@ -27,7 +27,7 @@ class PelangganController extends Controller
         'alamat' => 'nullable|string',
         'no_hp' => 'nullable|string',
         'email' => 'nullable|email',
-        'password' => 'nullable|string',
+        'password' => 'required|min:3',
     ]);
 
     if ($validator->fails()) {
@@ -39,7 +39,6 @@ class PelangganController extends Controller
     }
 
     try {
-        // Cari server berdasarkan id_server
         $server = Server::find($request->id_server);
         if (!$server) {
             return response()->json([
@@ -48,26 +47,34 @@ class PelangganController extends Controller
             ], 404);
         }
 
-        // Ambil dua huruf awal lokasi
-        $serverPrefix = strtoupper(substr($server->lokasi, 0, 2));
+        // Ambil 2 huruf awal lokasi server (contoh: JA)
+        $prefix = strtoupper(substr($server->lokasi, 0, 2));
 
-        // Format waktu: bulan + hari + jam + menit + detik (misal: 0723123045)
-        $timestamp = date('mdHis');
+        // Timestamp (tgl+jam) + random 4 karakter uppercase
+        $uniquePart = date('ymdHis') . strtoupper(Str::random(4));
 
-        // Tambah 3 karakter acak
-        $randomStr = strtoupper(Str::random(3));
+        // Gabungkan menjadi id pelanggan, contoh: JA250723121530AB9X
+        $id_pelanggan = $prefix . $uniquePart;
 
-        // Gabungkan jadi id_pelanggan: misalnya JA0723123045X8K
-        $id_pelanggan = $serverPrefix . $timestamp . $randomStr;
+        // Cek jika id_pelanggan duplikat, regenerasi maksimal 5 kali
+        $attempt = 0;
+        while (Pelanggan::where('id_pelanggan', $id_pelanggan)->exists() && $attempt < 5) {
+            $uniquePart = date('ymdHis') . strtoupper(Str::random(4));
+            $id_pelanggan = $prefix . $uniquePart;
+            $attempt++;
+        }
 
-        // Ambil semua data request
+        if (Pelanggan::where('id_pelanggan', $id_pelanggan)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghasilkan ID unik. Coba lagi.'
+            ], 500);
+        }
+
         $data = $request->all();
-
-        // Tambahkan remark1 dan id_pelanggan
         $data['remark1'] = 1;
         $data['id_pelanggan'] = $id_pelanggan;
 
-        // Simpan data pelanggan
         $pelanggan = Pelanggan::create($data);
 
         return response()->json([
@@ -84,7 +91,8 @@ class PelangganController extends Controller
     }
 }
 
-    public function store1(Request $request)
+   
+    public function storeY(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id_server' => 'required|exists:servers,id', // Make sure id_server exists in the servers table
