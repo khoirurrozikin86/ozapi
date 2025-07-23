@@ -19,80 +19,10 @@ class PelangganController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'id_server' => 'required|exists:servers,id',
-        'nama' => 'required|string|max:255',
-        'alamat' => 'nullable|string',
-        'no_hp' => 'nullable|string',
-        'email' => 'nullable|email',
-        'password' => 'required|min:3',
-    ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validasi gagal.',
-            'errors' => $validator->errors()
-        ], 422);
-    }
-
-    try {
-        $server = Server::find($request->id_server);
-        if (!$server) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Server tidak ditemukan.'
-            ], 404);
-        }
-
-        // Ambil 2 huruf awal lokasi server (contoh: JA)
-        $prefix = strtoupper(substr($server->lokasi, 0, 2));
-
-        // Timestamp (tgl+jam) + random 4 karakter uppercase
-        $uniquePart = date('ymdHis') . strtoupper(Str::random(4));
-
-        // Gabungkan menjadi id pelanggan, contoh: JA250723121530AB9X
-        $id_pelanggan = $prefix . $uniquePart;
-
-        // Cek jika id_pelanggan duplikat, regenerasi maksimal 5 kali
-        $attempt = 0;
-        while (Pelanggan::where('id_pelanggan', $id_pelanggan)->exists() && $attempt < 5) {
-            $uniquePart = date('ymdHis') . strtoupper(Str::random(4));
-            $id_pelanggan = $prefix . $uniquePart;
-            $attempt++;
-        }
-
-        if (Pelanggan::where('id_pelanggan', $id_pelanggan)->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghasilkan ID unik. Coba lagi.'
-            ], 500);
-        }
-
-        $data = $request->all();
-        $data['remark1'] = 1;
-        $data['id_pelanggan'] = $id_pelanggan;
-
-        $pelanggan = Pelanggan::create($data);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pelanggan berhasil ditambahkan.',
-            'data' => $pelanggan
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal menambahkan pelanggan.',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
 
    
-    public function storeY(Request $request)
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id_server' => 'required|exists:servers,id', // Make sure id_server exists in the servers table
@@ -100,7 +30,7 @@ class PelangganController extends Controller
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string',
             'email' => 'nullable',
-            'password' => 'required|min:3',
+            'password' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -127,13 +57,20 @@ class PelangganController extends Controller
             // Get the current month (e.g., "05" for May)
             $month = date('m');
 
-            // Generate the sequential number, find the last inserted pelanggan ID and increment
-            $lastPelanggan = Pelanggan::orderBy('id_pelanggan', 'desc')->first();
-            $lastNumber = $lastPelanggan ? (int) substr($lastPelanggan->id_pelanggan, 4) : 0;
-            $newNumber = str_pad($lastNumber + 1, 9, '0', STR_PAD_LEFT); // Pads to ensure 9 digits
+           // Generate ID pelanggan unik (max 5x percobaan jika duplikat)
+    $attempt = 0;
+    do {
+        $randomNumber = str_pad(random_int(0, 999999999), 9, '0', STR_PAD_LEFT); // 9 digit acak
+        $id_pelanggan = $serverName . $month . $randomNumber;
+        $attempt++;
+    } while (\App\Models\Pelanggan::where('id_pelanggan', $id_pelanggan)->exists() && $attempt < 5);
 
-            // Construct the id_pelanggan (e.g., "JA050000001")
-            $id_pelanggan = $serverName . $month . $newNumber;
+    if (\App\Models\Pelanggan::where('id_pelanggan', $id_pelanggan)->exists()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal menghasilkan ID pelanggan unik. Silakan coba lagi.'
+        ], 500);
+    }
 
             // Get all the request data
             $data = $request->all();
